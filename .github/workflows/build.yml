@@ -66,6 +66,22 @@ jobs:
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
+  devguard-sast:
+    uses: l3montree-dev/devguard-action/.github/workflows/sast.yml@main
+    with:
+      api-url: https://api.main.devguard.org
+      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+    secrets:
+      devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+    
+  devguard-sca:
+      uses: l3montree-dev/devguard-action/.github/workflows/sca.yml@main
+      with:
+        api-url: https://api.main.devguard.org
+        asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      secrets:
+        devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+  
   #call-devsecops: # not working because we have no image
   #  needs: build
   #  uses: l3montree-dev/devguard-action/.github/workflows/full.yml@main
