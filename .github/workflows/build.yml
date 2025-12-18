@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - v*.**
   merge_group:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -20,18 +18,12 @@ jobs:
       contents: write
     strategy:
       matrix:
-        version: [msrv, stable]
+        version: [1.85.1, stable]
         target:
           - arch: x86_64-unknown-linux-gnu
             runs-on: ubuntu-latest
           - arch: aarch64-apple-darwin
             runs-on: macos-latest
-          - arch: x86_64-apple-darwin
-            runs-on: macos-latest
-          - arch: wasm32-wasip2
-            runs-on: macos-latest
-            skip-test: true
-            ext: .wasm
     runs-on: ${{ matrix.target.runs-on }}
     steps:
       - uses: actions/checkout@v4
@@ -39,9 +31,8 @@ jobs:
           submodules: 'true'
       - name: Prepare target
         run: rustup target add ${{ matrix.target.arch }}
-      - name: Set Rust version if not MSRV
-        if: ${{ matrix.version == 'stable' }}
-        run: rustup override set stable
+      - name: Set Rust version
+        run: rustup override set ${{ matrix.version }}
       - name: Update assets
         run: ./update_assets.sh
       - name: Format check
@@ -52,18 +43,6 @@ jobs:
         run: cargo install cargo-auditable
       - name: Build
         run: cargo auditable build --target=${{ matrix.target.arch }} --release --verbose
-      - name: Build WASM bindings
-        run: |
-          if [ "${{ matrix.target.arch }}" = "wasm32-wasip2" ]; then
-            cargo install wasm-pack
-            wasm-pack build csaf-rs --scope csaf-rs
-          fi
-      - name: Run tests
-        run: cargo test --target=${{ matrix.target.arch }} --verbose
-        if: ${{ matrix.target.skip-test != true }}
-      - name: Publish dry-run
-        run: cargo publish --dry-run -p csaf-rs --target=${{ matrix.target.arch }} --verbose
-        if: ${{ matrix.target.skip-test != true }}
       - name: Archive csaf-validator (${{ matrix.target.arch }})
         uses: actions/upload-artifact@v4
         with:
@@ -81,79 +60,3 @@ jobs:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
           artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.spdx.json
-
-
-  publish-crates:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write    
-    needs:
-      - build
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'beta') && !contains(github.ref, 'alpha')
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-      - uses: rust-lang/crates-io-auth-action@v1
-        id: auth
-      - run: cargo publish
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-      - name: Determine Version
-        run: |
-          # determine version from tag
-          export VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
-          if [[ $VERSION != v* ]]
-          then
-            export VERSION=""
-            echo "Building version-less (main or feature branch)"
-          else
-            echo "Building as ${VERSION}"
-          fi
-          # store version in GitHub environment file
-          echo "version=$VERSION" >> $GITHUB_ENV
-      - uses: actions/download-artifact@v4
-        with:
-          path: csaf-validator
-          pattern: csaf-validator-*
-      - run: |
-          # zip each folder
-          ls csaf-validator | xargs -I {} zip {}.zip -rj csaf-validator/{}
-          ls csaf-validator-*.zip
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.version }}
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          files: |
-            csaf-validator-*.zip
-  publish-npm:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write    
-    needs:
-      - build
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'beta') && !contains(github.ref, 'alpha')
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Build WASM bindings
-        run: |
-          cargo install wasm-pack
-          wasm-pack build csaf-rs --scope csaf-rs    
-      - name: Publish to NPM
-        working-directory: ./csaf-rs/pkg
-        run: |
-          npm publish --provenance
