@@ -59,20 +59,25 @@ jobs:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
           artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.spdx.json
-      - name: code-risk-identification
-        uses: l3montree-dev/devguard-action/.github/workflows/upload-sbom.yml@main
-        with:
-          # Path to SBOM file relative to the root of the repository
-          sbom-file: ./results.sbom
-          asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
-          api-url: "https://api.devguard.org"
-          web-ui: "https://app.devguard.org"
-          devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings 
+  
   call-devsecops:
-      uses: l3montree-dev/devguard-action/.github/workflows/full.yml@main
-      with:
-          asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
-          api-url: "https://api.devguard.org"
-          web-ui: "https://app.devguard.org"
-      secrets:
-          devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings
+    needs: build
+    uses: l3montree-dev/devguard-action/.github/workflows/full.yml@main
+    with:
+      asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
+      api-url: "https://api.devguard.org"
+      web-ui: "https://app.devguard.org"
+    secrets:
+      devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings
+
+  #code-risk-identification:
+  #  needs: build
+  #  uses: l3montree-dev/devguard-action/.github/workflows/upload-sbom.yml@main
+  #  with:
+  #    # Path to SBOM file relative to the root of the repository
+  #    sbom-file: ./results.sbom
+  #    asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
+  #    api-url: "https://api.devguard.org"
+  #    web-ui: "https://app.devguard.org"
+  #  secrets:
+  #    devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings 
