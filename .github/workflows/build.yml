@@ -50,13 +50,13 @@ jobs:
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: cyclonedx-json
-          artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.cdx.json
+          artifact-name: csaf-validator-${{ matrix.target.arch }}-sbom.cdx.json
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
-          artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.spdx.json
+          artifact-name: csaf-validator-${{ matrix.target.arch }}-sbom.spdx.json
 
   devguard-secret-scanning:
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
@@ -79,6 +79,25 @@ jobs:
     with:
       api-url: https://api.main.devguard.org
       asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+    secrets:
+      devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+
+  devguard-iac:
+    uses: l3montree-dev/devguard-action/.github/workflows/iac.yml@main
+    with:
+      api-url: https://api.main.devguard.org
+      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+    secrets:
+      devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+
+  dependency-risk-identification:
+    needs: build
+    uses: l3montree-dev/devguard-action/.github/workflows/code-risk-identification.yml@feautre/sarif-sbom-upload-actions
+    with:
+      api-url: https://api.main.devguard.org
+      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      sarif-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
+      sarif-file: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
