@@ -23,8 +23,6 @@ jobs:
     strategy:
       matrix:
         target:
-          - arch: x86_64-unknown-linux-gnu
-            runs-on: ubuntu-latest
           - arch: aarch64-apple-darwin
             runs-on: macos-latest
     runs-on: ${{ matrix.target.runs-on }}
@@ -59,16 +57,24 @@ jobs:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
           artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.spdx.json
-  
-  call-devsecops:
-    needs: build
-    uses: l3montree-dev/devguard-action/.github/workflows/full.yml@main
+
+  devguard-secret-scanning:
+    uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
     with:
-      asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
-      api-url: "https://api.devguard.org"
-      web-ui: "https://app.devguard.org"
+      api-url: https://api.main.devguard.org
+      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
     secrets:
-      devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings
+      devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+  
+  #call-devsecops: # not working because we have no image
+  #  needs: build
+  #  uses: l3montree-dev/devguard-action/.github/workflows/full.yml@main
+  #  with:
+  #    asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
+  #    api-url: "https://api.devguard.org"
+  #    web-ui: "https://app.devguard.org"
+  #  secrets:
+  #    devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings
 
   #code-risk-identification:
   #  needs: build
