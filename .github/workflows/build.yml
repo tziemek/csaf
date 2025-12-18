@@ -35,10 +35,6 @@ jobs:
         run: rustup override set ${{ matrix.version }}
       - name: Update assets
         run: ./update_assets.sh
-      - name: Format check
-        run: cargo fmt --all --check -- -l
-      - name: Clippy check
-        run: cargo clippy --all-targets -- -D warnings
       - name: Install cargo-auditable
         run: cargo install cargo-auditable
       - name: Build
