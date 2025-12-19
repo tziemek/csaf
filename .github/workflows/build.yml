@@ -43,7 +43,7 @@ jobs:
       - name: Archive csaf-validator (${{ matrix.target.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}
+          name: csaf-validator-${{ matrix.target.arch }}
           path: target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@v0
@@ -96,8 +96,8 @@ jobs:
     with:
       api-url: https://api.devguard.org 
       asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
-      sarif-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
-      sarif-file: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
+      sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
+      sbom-file: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
