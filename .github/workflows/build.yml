@@ -61,41 +61,41 @@ jobs:
   devguard-secret-scanning:
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
     with:
-      api-url: https://api.devguard.org 
-      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      #api-url: https://api.devguard.org 
+      asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
   devguard-sast:
     uses: l3montree-dev/devguard-action/.github/workflows/sast.yml@main
     with:
-      api-url: https://api.devguard.org 
-      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      #api-url: https://api.devguard.org 
+      asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
     
   devguard-sca:
     uses: l3montree-dev/devguard-action/.github/workflows/software-composition-analysis.yml@main
     with:
-      api-url: https://api.devguard.org 
-      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      #api-url: https://api.devguard.org 
+      asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
 
   devguard-iac:
     uses: l3montree-dev/devguard-action/.github/workflows/iac.yml@main
     with:
-      api-url: https://api.devguard.org 
-      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      #api-url: https://api.devguard.org 
+      asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
 
   dependency-risk-identification:
     needs: build
-    uses: l3montree-dev/devguard-action/.github/workflows/code-risk-identification.yml@main
+    uses: l3montree-dev/devguard-action/.github/workflows/dependency-risk-identification.yml@main
     with:
-      api-url: https://api.devguard.org 
-      asset-name: 'csaf-rs-test/projects/test/assets/csaf-test-private'
+      #api-url: https://api.devguard.org 
+      asset-name: ${{ vars.DEVGUARD_ASSET }}
       sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
       sbom-file: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
     secrets:
