@@ -96,8 +96,8 @@ jobs:
     with:
       #api-url: https://api.devguard.org 
       asset-name: ${{ vars.DEVGUARD_ASSET }}
-      sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
-      sbom-file: csaf-validator-aarch64-apple-darwin-sbom.spdx.json
+      sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
+      sbom-file: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
