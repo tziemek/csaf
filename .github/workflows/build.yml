@@ -67,7 +67,7 @@ jobs:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
   devguard-sast:
-    uses: l3montree-dev/devguard-action/.github/workflows/sast.yml@main
+    uses: l3montree-dev/devguard-action/.github/workflows/static-application-security-testing.yml@main
     with:
       #api-url: https://api.devguard.org 
       asset-name: ${{ vars.DEVGUARD_ASSET }}
