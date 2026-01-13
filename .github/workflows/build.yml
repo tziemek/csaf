@@ -90,16 +90,16 @@ jobs:
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
 
-  dependency-risk-identification:
-    needs: build
-    uses: l3montree-dev/devguard-action/.github/workflows/dependency-risk-identification.yml@main
-    with:
-      #api-url: https://api.devguard.org 
-      asset-name: ${{ vars.DEVGUARD_ASSET }}
-      sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
-      sbom-file: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
-    secrets:
-      devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+  #dependency-risk-identification:
+  #  needs: build
+  #  uses: l3montree-dev/devguard-action/.github/workflows/dependency-risk-identification.yml@main
+  #  with:
+  #    #api-url: https://api.devguard.org 
+  #    asset-name: ${{ vars.DEVGUARD_ASSET }}
+  #    sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
+  #    sbom-file: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
+  #  secrets:
+  #    devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
   #call-devsecops: # not working because we have no image
   #  needs: build
