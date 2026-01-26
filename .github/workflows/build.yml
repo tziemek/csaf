@@ -74,7 +74,7 @@ jobs:
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
     
-  devguard-sca:
+  devguard-sca: #uses trivy
     uses: l3montree-dev/devguard-action/.github/workflows/software-composition-analysis.yml@main
     with:
       #api-url: https://api.devguard.org 
