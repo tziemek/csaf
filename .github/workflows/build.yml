@@ -89,36 +89,17 @@ jobs:
       asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
-
-  #dependency-risk-identification:
-  #  needs: build
-  #  uses: l3montree-dev/devguard-action/.github/workflows/dependency-risk-identification.yml@main
-  #  with:
-  #    #api-url: https://api.devguard.org 
-  #    asset-name: ${{ vars.DEVGUARD_ASSET }}
-  #    sbom-artifact-name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
-  #    sbom-file: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
-  #  secrets:
-  #    devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
-  #call-devsecops: # not working because we have no image
-  #  needs: build
-  #  uses: l3montree-dev/devguard-action/.github/workflows/full.yml@main
-  #  with:
-  #    asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
-  #    api-url: "https://api.devguard.org"
-  #    web-ui: "https://app.devguard.org"
-  #  secrets:
-  #    devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings
-
-  #code-risk-identification:
-  #  needs: build
-  #  uses: l3montree-dev/devguard-action/.github/workflows/upload-sbom.yml@main
-  #  with:
-  #    # Path to SBOM file relative to the root of the repository
-  #    sbom-file: ./results.sbom
-  #    asset-name: "csaf-rs-test/projects/test/assets/csaf-test-private"
-  #    api-url: "https://api.devguard.org"
-  #    web-ui: "https://app.devguard.org"
-  #  secrets:
-  #    devguard-token: "${{ secrets.DEVGUARD_TOKEN }}" # you need to create this secret in your GitHub repository settings 
+  devguard-sbom-attestation:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: download
+        uses: actions/download-artifact@v4
+        with:
+          name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
+      - name: attestation
+        uses:  docker://ghcr.io/l3montree-dev/devguard/scanner:main-latest 
+        with:
+          #args: devguard-scanner secret-scanning --assetName=${{ inputs.asset-name }} --apiUrl=${{ inputs.api-url }} --token="${{ secrets.devguard-token }}" --path=${{ inputs.path }} --defaultRef=${{ github.event.repository.default_branch }} --isTag=${{ github.ref_type == 'tag' }} --ref=${{ github.ref_name }} --webUI=${{ inputs.web-ui }}
+          args: devguard-scanner attest --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.devguard-token }}" --predicateType "https://cyclonedx.org/bom" csaf-validator-aarch64-apple-darwin-sbom.cdx.json
