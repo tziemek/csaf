@@ -22,41 +22,52 @@ jobs:
       contents: write
     strategy:
       matrix:
+        version:
+          - 1.88.0
+          - 1.93.0
         target:
           - arch: aarch64-apple-darwin
             runs-on: macos-latest
+          - arch: x86_64-unknown-linux-gnu
+            runs-on: ubuntu-latest
     runs-on: ${{ matrix.target.runs-on }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - name: Set Rust version
+        run: |
+          rustup override set ${{ matrix.version }}
+          rustup default ${{ matrix.version }}
       - name: Prepare target
         run: rustup target add ${{ matrix.target.arch }}
-      - name: Set Rust version
-        run: rustup override set stable
+      - name: Use cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: build-${{matrix.version}}-${{ matrix.target.arch }}
       - name: Update assets
         run: ./update_assets.sh
       - name: Install cargo-auditable
         run: cargo install cargo-auditable
       - name: Build
-        run: cargo auditable build --target=${{ matrix.target.arch }} --release --verbose
+        run: cargo auditable build --target=${{ matrix.target.arch }} --release --locked --verbose
       - name: Archive csaf-validator (${{ matrix.target.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: csaf-validator-${{ matrix.target.arch }}
+          name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}
           path: target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: cyclonedx-json
-          artifact-name: csaf-validator-${{ matrix.target.arch }}-sbom.cdx.json
+          artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.cdx.json
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
-          artifact-name: csaf-validator-${{ matrix.target.arch }}-sbom.spdx.json
+          artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-sbom.spdx.json
 
   devguard-secret-scanning: # uses gitleaks
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
