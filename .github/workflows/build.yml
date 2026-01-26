@@ -90,16 +90,16 @@ jobs:
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
   
-  devguard-sbom-attestation:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: download
-        uses: actions/download-artifact@v4
-        with:
-          name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
-      - name: attestation
-        uses:  docker://ghcr.io/l3montree-dev/devguard/scanner:main-latest 
-        with:
-          #args: devguard-scanner secret-scanning --assetName=${{ inputs.asset-name }} --apiUrl=${{ inputs.api-url }} --token="${{ secrets.devguard-token }}" --path=${{ inputs.path }} --defaultRef=${{ github.event.repository.default_branch }} --isTag=${{ github.ref_type == 'tag' }} --ref=${{ github.ref_name }} --webUI=${{ inputs.web-ui }}
-          args: devguard-scanner attest --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.DEVGUARD_TOKEN }}" --predicateType "https://cyclonedx.org/bom" csaf-validator-aarch64-apple-darwin-sbom.cdx.json
+  #devguard-sbom-attestation:
+  #  needs: build
+   # runs-on: ubuntu-latest
+   # steps:
+   #   - name: download
+   #     uses: actions/download-artifact@v4
+   #     with:
+   #       name: csaf-validator-aarch64-apple-darwin-sbom.cdx.json
+   #   - name: attestation
+   #     uses:  docker://ghcr.io/l3montree-dev/devguard/scanner:main-latest 
+   #     with:
+   #       #args: devguard-scanner secret-scanning --assetName=${{ inputs.asset-name }} --apiUrl=${{ inputs.api-url }} --token="${{ secrets.devguard-token }}" --path=${{ inputs.path }} --defaultRef=${{ github.event.repository.default_branch }} --isTag=${{ github.ref_type == 'tag' }} --ref=${{ github.ref_name }} --webUI=${{ inputs.web-ui }}
+   #       args: devguard-scanner attest --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.DEVGUARD_TOKEN }}" --predicateType "https://cyclonedx.org/bom" --artifactName source csaf-validator-aarch64-apple-darwin-sbom.cdx.json#
