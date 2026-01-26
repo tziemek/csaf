@@ -44,4 +44,6 @@ jobs:
           fi
 
       - name: Push changes to dependabot branch
-        run: git push origin HEAD:${{ github.event.pull_request.head.ref }}
+        env:
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: git push origin HEAD:"${PR_BRANCH}"
