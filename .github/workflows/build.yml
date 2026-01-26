@@ -58,7 +58,7 @@ jobs:
           format: spdx-json
           artifact-name: csaf-validator-${{ matrix.target.arch }}-sbom.spdx.json
 
-  devguard-secret-scanning:
+  devguard-secret-scanning: # uses gitleaks
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
     with:
       #api-url: https://api.devguard.org 
