@@ -45,6 +45,7 @@ jobs:
       - name: Prepare target
         run: rustup target add ${{ matrix.target.arch }}
       - name: Get version
+        shell: bash
         id: version
         run: |
           VERSION=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[] | select(.name == "csaf-validator") | .version')
