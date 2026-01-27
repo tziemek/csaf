@@ -128,7 +128,8 @@ jobs:
 
       - name: Process CDX files
         run: |
-          for cdx_file in sboms/**/*.cdx.json; do
+          shopt -s globstar nullglob
+          for cdx_file in sboms/*.cdx.json; do
             echo "Processing: $cdx_file"
             
             # Remove prefix and suffix to extract arch and version
@@ -144,7 +145,7 @@ jobs:
             echo "Target: $target"
             echo "Version: $version"
             
-            devguard-scanner sbom upload "$cdx_file" --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.DEVGUARD_TOKEN }}" --artifactName "csaf-validator_$(arch)_$(target)" --ref "$(version)-${{ github.ref }}"
+            devguard-scanner sbom upload "$cdx_file" --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.DEVGUARD_TOKEN }}" --artifactName "csaf-validator_${arch}_${target}" --ref "${version}-${{ github.ref }}"
 
           done
   
