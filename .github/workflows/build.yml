@@ -70,13 +70,13 @@ jobs:
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: cyclonedx-json
-          artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-v${{ steps.version.outputs.version }}-sbom.cdx.json
+          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_v${{ steps.version.outputs.version }}_sbom.cdx.json
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
-          artifact-name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-v${{ steps.version.outputs.version }}-sbom.spdx.json
+          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_v${{ steps.version.outputs.version }}_sbom.spdx.json
 
   devguard-secret-scanning: # uses gitleaks
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
@@ -120,33 +120,33 @@ jobs:
           pattern: '*-sbom.cdx.json'
           path: sboms/
       
-      - name: Process CDX files
-        uses:  docker://ghcr.io/l3montree-dev/devguard/scanner:main-latest 
-        with:
-          args: |
-            for cdx_file in sboms/**/*.cdx.json; do
-              echo "Processing: $cdx_file"
-              
-              # Remove prefix and suffix to extract arch and version
-              temp="${cdx_file#csaf-validator-}"
-              temp="${temp%-sbom.cdx.json}"
-              
-              # Split by last dash to separate arch and version
-              arch="${temp%-*}"
-              version="${temp##*-}"
-              
-              echo "Architecture: $arch"
-              echo "Version: $version"
-              
+      - name: Install devguard-scanner
+        run: |
+          go install github.com/l3montree-dev/devguard/cmd/devguard-scanner@latest
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          devguard-scanner --version
 
-              # TODO: Call your action here with the extracted information
-              # Example:
-              # - uses: your-action@v1
-              #   with:
-              #     cdx-file: $cdx_file
-              #     architecture: $arch
-              #     version: $version
-            done
+      - name: Process CDX files
+        run: |
+          for cdx_file in sboms/**/*.cdx.json; do
+            echo "Processing: $cdx_file"
+            
+            # Remove prefix and suffix to extract arch and version
+            temp=${cdx_file#csaf-validator_}
+            temp=${temp%_sbom.cdx.json}
+            
+            # Split by last dash to separate arch and version
+            arch=$(echo "$temp" | cut -d '_' -f1)
+            target=$(echo "$temp" | cut -d '_' -f2)
+            version=$(echo "$temp" | cut -d '_' -f3)
+            
+            echo "Architecture: $arch"
+            echo "Target: $target"
+            echo "Version: $version"
+            
+            devguard-scanner sbom upload "$cdx_file" --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.DEVGUARD_TOKEN }}" --artifactName "csaf-validator_$(arch)_$(target)" --ref "$(version)-${{ github.ref }}"
+
+          done
   
   #devguard-sbom-attestation:
   #  needs: build
