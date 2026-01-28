@@ -129,11 +129,18 @@ jobs:
       - name: Process CDX files
         run: |
           shopt -s globstar nullglob
-          for cdx_file in sboms/*.cdx.json; do
+          echo "Listing sboms directory structure:"
+          find sboms -type f -name "*.cdx.json" || echo "No cdx.json files found"
+          ls -laR sboms/
+          
+          for cdx_file in $(find sboms -type f -name "*.cdx.json"); do
             echo "Processing: $cdx_file"
             
+            # Extract just the filename
+            filename=$(basename "$cdx_file")
+            
             # Remove prefix and suffix to extract arch and version
-            temp=${cdx_file#csaf-validator_}
+            temp=${filename#csaf-validator_}
             temp=${temp%_sbom.cdx.json}
             
             # Split by last dash to separate arch and version
@@ -141,9 +148,9 @@ jobs:
             target=$(echo "$temp" | cut -d '_' -f2)
             version="$(git describe --tags)"
 
-            echo "Architecture: $arch" >> $GITHUB_OUTPUT
-            echo "Target: $target" >> $GITHUB_OUTPUT
-            echo "Version: $version" >> $GITHUB_OUTPUT
+            echo "Architecture: $arch"
+            echo "Target: $target"
+            echo "Version: $version"
 
             tagOpt=""
 
@@ -153,7 +160,7 @@ jobs:
 
             artifactName="csaf-validator_$arch_$target"
             
-            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="$artifactName" --ref="$version" $tagOpt  >> $GITHUB_OUTPUT
+            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="$artifactName" --ref="$version" $tagOpt  2>&1
 
           done
   
