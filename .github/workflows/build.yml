@@ -40,26 +40,31 @@ jobs:
           submodules: 'true'
           fetch-depth: 0
           fetch-tags: true
-      - name: Set Rust version
-        run: |
-          rustup override set ${{ matrix.version }}
-          rustup default ${{ matrix.version }}
-      - name: Prepare target
-        run: rustup target add ${{ matrix.target.arch }}
       - name: Get version
         shell: bash
         id: version
         run: |
           VERSION=$(git describe --tags)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+     
       - name: Use cache
+        id: rust-cache
         uses: Swatinem/rust-cache@v2
         with:
           key: build-${{matrix.version}}-${{ matrix.target.arch }}-${{ steps.version.outputs.version }}
+      - name: Set Rust version
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        run: |
+          rustup override set ${{ matrix.version }}
+          rustup default ${{ matrix.version }}
+      - name: Prepare target
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        run: rustup target add ${{ matrix.target.arch }}
+      - name: Install cargo-auditable
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        run: cargo install cargo-auditable
       - name: Update assets
         run: ./update_assets.sh
-      - name: Install cargo-auditable
-        run: cargo install cargo-auditable
       - name: Build
         run: cargo auditable build --target=${{ matrix.target.arch }} --release --locked --verbose
       - name: Archive csaf-validator (${{ matrix.target.arch }})
