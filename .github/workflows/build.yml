@@ -117,7 +117,7 @@ jobs:
       - name: Download all CDX artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: '*-sbom.cdx.json'
+          pattern: '*sbom.cdx.json'
           path: sboms/
       
       - name: Install devguard-scanner
