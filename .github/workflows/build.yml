@@ -139,7 +139,7 @@ jobs:
             # Split by last dash to separate arch and version
             arch=$(echo "$temp" | cut -d '_' -f1)
             target=$(echo "$temp" | cut -d '_' -f2)
-            version=$(echo "$temp" | cut -d '_' -f3)
+            version="$(git describe --tags)"
             
             echo "Architecture: $arch"
             echo "Target: $target"
@@ -149,11 +149,11 @@ jobs:
 
             if [[ ${{ github.ref_type }} == 'tag' ]]; then
               tagOpt="--isTag=true"
-            else
-              version=$version+${{ github.ref }};
             fi
+
+            artifactName="csaf-validator_$arch_$target"
             
-            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="csaf-validator_${arch}_${target}" --ref="${version}" $tagOpt
+            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="$artifactName" --ref="$version" $tagOpt
 
           done
   
