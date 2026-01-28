@@ -70,20 +70,20 @@ jobs:
       - name: Archive csaf-validator (${{ matrix.target.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-v${{ steps.version.outputs.version }}
+          name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-${{ steps.version.outputs.version }}
           path: target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: cyclonedx-json
-          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_v${{ steps.version.outputs.version }}_sbom.cdx.json
+          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_${{ steps.version.outputs.version }}_sbom.cdx.json
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
-          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_v${{ steps.version.outputs.version }}_sbom.spdx.json
+          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_${{ steps.version.outputs.version }}_sbom.spdx.json
 
   devguard-secret-scanning: # uses gitleaks
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
