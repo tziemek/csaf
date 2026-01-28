@@ -140,10 +140,10 @@ jobs:
             arch=$(echo "$temp" | cut -d '_' -f1)
             target=$(echo "$temp" | cut -d '_' -f2)
             version="$(git describe --tags)"
-            
-            echo "Architecture: $arch"
-            echo "Target: $target"
-            echo "Version: $version"
+
+            echo "Architecture: $arch" >> $GITHUB_OUTPUT
+            echo "Target: $target" >> $GITHUB_OUTPUT
+            echo "Version: $version" >> $GITHUB_OUTPUT
 
             tagOpt=""
 
@@ -153,7 +153,7 @@ jobs:
 
             artifactName="csaf-validator_$arch_$target"
             
-            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="$artifactName" --ref="$version" $tagOpt
+            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="$artifactName" --ref="$version" $tagOpt  >> $GITHUB_OUTPUT
 
           done
   
