@@ -116,18 +116,26 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+ 
+      - name: Cache devguard-scanner
+        id: cache-scanner
+        uses: actions/cache@v4
+        with:
+          path: ~/go/bin/devguard-scanner
+          key: devguard-scanner-${{ runner.os }}
+      - name: Install devguard-scanner
+        if: steps.cache-scanner.outputs.cache-hit != 'true'
+        run: |
+          go install github.com/l3montree-dev/devguard/cmd/devguard-scanner@latest
+      
       - name: Download all CDX artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: '*sbom.cdx.json'
           path: sboms/
       
-      - name: Install devguard-scanner
-        run: |
-          go install github.com/l3montree-dev/devguard/cmd/devguard-scanner@latest
-          export PATH="$PATH:$(go env GOPATH)/bin"
-          devguard-scanner --version
-
       - name: Process CDX files
         run: |
           shopt -s globstar nullglob
