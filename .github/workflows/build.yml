@@ -159,9 +159,11 @@ jobs:
             temp=${temp%_sbom.cdx.json}
             
             # Split by last dash to separate arch and version
-            arch=$(echo "$temp" | cut -d '_' -f1)
-            target=$(echo "$temp" | cut -d '_' -f2)
-            version=$(echo "$temp" | cut -d '_' -f3)
+            if [[ $temp =~ ^(.+)_([0-9]+\.[0-9]+\.[0-9]+)_(v.+)$ ]]; then
+              arch="${BASH_REMATCH[1]}"
+              target="${BASH_REMATCH[2]}"
+              version="${BASH_REMATCH[3]}"
+            fi
 
             echo "Architecture: $arch"
             echo "Target: $target"
