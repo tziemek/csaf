@@ -144,8 +144,16 @@ jobs:
             echo "Architecture: $arch"
             echo "Target: $target"
             echo "Version: $version"
+
+            tagOpt=""
+
+            if [[ ${{ github.ref_type }} == 'tag' ]]; then
+              tagOpt="--isTag=true"
+            else
+              version=$version+${{ github.ref }};
+            fi
             
-            devguard-scanner sbom upload "$cdx_file" --assetName=${{ vars.DEVGUARD_ASSET }} --token "${{ secrets.DEVGUARD_TOKEN }}" --artifactName "csaf-validator_${arch}_${target}" --ref "${version}-${{ github.ref }}"
+            devguard-scanner sbom "$cdx_file" --assetName="${{ vars.DEVGUARD_ASSET }}" --token="${{ secrets.DEVGUARD_TOKEN }}" --artifactName="csaf-validator_${arch}_${target}" --ref="${version}" $tagOpt
 
           done
   
