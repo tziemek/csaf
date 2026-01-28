@@ -48,7 +48,7 @@ jobs:
         shell: bash
         id: version
         run: |
-          VERSION=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[] | select(.name == "csaf-validator") | .version')
+          VERSION=$(git describe --tags)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       - name: Use cache
         uses: Swatinem/rust-cache@v2
@@ -146,7 +146,7 @@ jobs:
             # Split by last dash to separate arch and version
             arch=$(echo "$temp" | cut -d '_' -f1)
             target=$(echo "$temp" | cut -d '_' -f2)
-            version="$(git describe --tags)"
+            version=$(echo "$temp" | cut -d '_' -f3)
 
             echo "Architecture: $arch"
             echo "Target: $target"
