@@ -17,7 +17,23 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(git describe --tags)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
   build:
+    needs: prepare
     permissions:
       contents: write
     strategy:
@@ -40,18 +56,13 @@ jobs:
           submodules: 'true'
           fetch-depth: 0
           fetch-tags: true
-      - name: Get version
-        shell: bash
-        id: version
-        run: |
-          VERSION=$(git describe --tags)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
      
       - name: Use cache
         id: rust-cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: build-${{matrix.version}}-${{ matrix.target.arch }}-${{ steps.version.outputs.version }}
+          key: build-${{matrix.version}}-${{ matrix.target.arch }}-${{ needs.prepare.outputs.version }}
       - name: Set Rust version
         if: steps.rust-cache.outputs.cache-hit != 'true'
         run: |
@@ -70,36 +81,40 @@ jobs:
       - name: Archive csaf-validator (${{ matrix.target.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-${{ steps.version.outputs.version }}
+          name: csaf-validator-${{ matrix.target.arch }}-${{ matrix.version }}-${{ needs.prepare.outputs.version }}
           path: target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: cyclonedx-json
-          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_${{ steps.version.outputs.version }}_sbom.cdx.json
+          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_${{ needs.prepare.outputs.version }}_sbom.cdx.json
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@v0
         with:
           file: ./target/${{ matrix.target.arch }}/release/csaf-validator${{ matrix.target.ext }}
           format: spdx-json
-          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_${{ steps.version.outputs.version }}_sbom.spdx.json
+          artifact-name: csaf-validator_${{ matrix.target.arch }}_${{ matrix.version }}_${{ needs.prepare.outputs.version }}_sbom.spdx.json
 
   devguard-secret-scanning: # uses gitleaks
+    needs: prepare
     uses: l3montree-dev/devguard-action/.github/workflows/secret-scanning.yml@main
     with:
       #api-url: https://api.devguard.org 
       asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+      ref: ${{ needs.prepare.outputs.version }}
   
   devguard-sast: #uses semgrep
+    needs: prepare
     uses: l3montree-dev/devguard-action/.github/workflows/static-application-security-testing.yml@main
     with:
       #api-url: https://api.devguard.org 
       asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+      ref: ${{ needs.prepare.outputs.version }}
     
   # devguard-sca: #uses trivy
   #   uses: l3montree-dev/devguard-action/.github/workflows/software-composition-analysis.yml@main
@@ -110,15 +125,19 @@ jobs:
   #     devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
 
   devguard-iac: # uses checkov
+    needs: prepare
     uses: l3montree-dev/devguard-action/.github/workflows/iac.yml@main
     with:
       #api-url: https://api.devguard.org 
       asset-name: ${{ vars.DEVGUARD_ASSET }}
     secrets:
       devguard-token: ${{ secrets.DEVGUARD_TOKEN }}
+      ref: ${{ needs.prepare.outputs.version }}
   
   process-sboms:
-    needs: build
+    needs: 
+      - build
+      - prepare
     runs-on: ubuntu-latest
     steps:
       - name: Add Go bin to PATH
