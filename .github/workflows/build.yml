@@ -143,10 +143,8 @@ jobs:
       
       - name: Process CDX files
         run: |
-          shopt -s globstar nullglob
-          echo "Listing sboms directory structure:"
+          #shopt -s globstar nullglob
           find sboms -type f -name "*.cdx.json" || echo "No cdx.json files found"
-          ls -laR sboms/
           
           for cdx_file in $(find sboms -type f -name "*.cdx.json"); do
             echo "Processing: $cdx_file"
