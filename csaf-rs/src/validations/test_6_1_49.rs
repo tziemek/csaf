@@ -1,9 +1,11 @@
+use std::ops::Deref;
+
 use crate::csaf_traits::{
     ContentTrait, CsafTrait, DocumentTrait, MetricTrait, RevisionTrait, TrackingTrait, VulnerabilityTrait,
 };
 use crate::schema::csaf2_1::schema::DocumentStatus;
 use crate::validation::ValidationError;
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, TimeZone};
 
 /// 6.1.49 Inconsistent SSVC Timestamp
 ///
@@ -57,7 +59,7 @@ pub fn test_6_1_49_inconsistent_ssvc_timestamp(doc: &impl CsafTrait) -> Result<(
                 if metric.get_content().has_ssvc() {
                     match metric.get_content().get_ssvc() {
                         Ok(ssvc) => {
-                            if ssvc.timestamp.fixed_offset() > newest_revision_date {
+                            if ssvc.timestamp.offset().fix() > newest_revision_date.offset().fix() {
                                 return Err(vec![ValidationError {
                                     message: format!(
                                         "SSVC timestamp ({}) for vulnerability at index {} is later than the newest revision date ({})",
