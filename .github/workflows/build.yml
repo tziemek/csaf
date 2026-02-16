@@ -41,9 +41,9 @@ jobs:
           echo "Refname: ${{ github.ref_name }}"
           echo "Eventname: ${{ github.event_name }}"
           if [[ ${{ github.event_name }} == "pull_request ]]; then
-            TARGETREF="--ref=\"${{ github.head_ref }}\""
+            TARGETREF=--ref="${{ github.head_ref }}"
           else
-            TARGETREF="--defaultRef=\"${{ github.ref_name }}\""
+            TARGETREF=--defaultRef="${{ github.ref_name }}"
           fi
           echo "targetref=$TARGETREF" >> $GITHUB_OUTPUT
 
