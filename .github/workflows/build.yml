@@ -41,7 +41,7 @@ jobs:
           echo "PR number: ${{ github.event.pull_request.number }}"
           echo "Refname: ${{ github.ref_name }}"
           echo "Eventname: ${{ github.event_name }}"
-          if [[ ${{ github.event_name }} == "pull_request ]]; then
+          if [[ ${{ github.event_name }} == "pull_request" ]]; then
             TARGETREF=--ref=${{ github.head_ref }}
           else
             TARGETREF=--defaultRef=${{ github.ref_name }}
