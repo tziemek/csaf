@@ -35,10 +35,11 @@ jobs:
       - name: Get branch or pr
         id: branch
         run : |
-          PRNUMBER = ${{ github.event.pull_request.number }}
-          GITHUBREF = ${{ github.ref_name }}
-          echo $PRNUMBER
-          echo GITHUBREF
+          echo ${{ github.base_ref }}
+          echo ${{ github.head_ref }}
+          echo ${{ github.event.pull_request.number }}
+          echo ${{ github.ref_name }}
+          echo ${{ github.event_name }}
   build:
     needs: prepare
     permissions:
