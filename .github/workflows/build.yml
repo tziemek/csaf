@@ -35,11 +35,18 @@ jobs:
       - name: Get branch or pr
         id: branch
         run : |
-          echo ${{ github.base_ref }}
-          echo ${{ github.head_ref }}
-          echo ${{ github.event.pull_request.number }}
-          echo ${{ github.ref_name }}
-          echo ${{ github.event_name }}
+          echo "Baseref: ${{ github.base_ref }}"
+          echo "Headref: ${{ github.head_ref }}"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "Refname: ${{ github.ref_name }}"
+          echo "Eventname: ${{ github.event_name }}"
+          if [[ ${{ github.event_name }} == "pull_request ]]; then
+            TARGETREF="--ref=\"${{ github.head_ref }}\""
+          else
+            TARGETREF="--defaultRef=\"${{ github.ref_name }}\""
+          fi
+          echo "targetref=$TARGETREF" >> $GITHUB_OUTPUT
+
   build:
     needs: prepare
     permissions:
